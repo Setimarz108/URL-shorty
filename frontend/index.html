@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Azure URL Shortener</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0078d4;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        input {
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #0078d4;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #106ebe;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            word-break: break-all;
+            display: none;
+        }
+        .copy-btn {
+            margin-top: 10px;
+            background-color: #107C10;
+        }
+        .url-display {
+            font-weight: bold;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Azure URL Shortener</h1>
+        <div>
+            <input type="text" id="urlInput" placeholder="Enter your long URL (e.g., example.com)">
+            <button onclick="shortenURL(event)">Shorten URL</button>
+        </div>
+        <div id="result">
+            <p><strong>Your shortened URL:</strong></p>
+            <div class="url-display">
+                <a id="shortUrlLink" href="#" target="_blank"></a>
+            </div>
+            <button id="copyButton" class="copy-btn" onclick="copyToClipboard()">Copy to Clipboard</button>
+        </div>
+    </div>
+
+    <script>
+        function shortenURL(event) {
+            // Prevent default behavior
+            event.preventDefault();
+            
+            const urlInput = document.getElementById('urlInput');
+            const resultDiv = document.getElementById('result');
+            const shortUrlLink = document.getElementById('shortUrlLink');
+            
+            if (!urlInput.value) {
+                alert("Please enter a URL");
+                return;
+            }
+            
+            resultDiv.style.display = "none";
+            
+            // Prepare URL (add https:// if missing)
+            let url = urlInput.value;
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+            }
+            
+            fetch('https://url-shorty.azurewebsites.net/api/create_short_url', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url: url })
+            })
+            .then(response => response.text())
+            .then(data => {
+                const shortUrl = data.replace("Short URL: ", "").trim();
+                shortUrlLink.href = shortUrl;
+                shortUrlLink.textContent = shortUrl;
+                resultDiv.style.display = "block";
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Error creating short URL: " + error.message);
+            });
+        }
+        
+        function copyToClipboard() {
+            const shortUrl = document.getElementById('shortUrlLink').textContent;
+            navigator.clipboard.writeText(shortUrl)
+                .then(() => {
+                    const copyBtn = document.getElementById('copyButton');
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                    alert("Failed to copy URL");
+                });
+        }
+    </script>
+</body>
+</html>

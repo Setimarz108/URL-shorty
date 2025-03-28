@@ -107,7 +107,7 @@ def create_short_url(req: func.HttpRequest) -> func.HttpResponse:
         # Store URL
         if save_url(short_code, url):
             # Build short URL (use actual function app URL in production)
-            function_app_url = os.environ.get("FUNCTION_APP_URL", "http://localhost:7071")
+            function_app_url = os.environ.get("FUNCTION_APP_URL", "https://url-shorty.azurewebsites.net")
             short_url = f"{function_app_url}/api/r/{short_code}"
             
             return func.HttpResponse(
